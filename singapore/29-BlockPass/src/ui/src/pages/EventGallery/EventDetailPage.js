@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // assuming you're using React Router for routing
 import { useConnectWallet } from "@subwallet-connect/react";
 import { fetchEventsFromContract, registerForEvent } from "../../contractAPI";
+import { events as localEvents } from "../../data";
 
 const EventDetailPage = () => {
   const { id } = useParams();
   const [{ wallet }] = useConnectWallet();
   const [event, setEvent] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataEvents, setEvents] = useState(localEvents);
 
   const navigate = useNavigate();
   const shortenAddress = (address) => {
@@ -37,13 +39,13 @@ const EventDetailPage = () => {
             startTime: eventDetails.startTime,
             endTime: eventDetails.endTime,
             location: eventDetails.location,
-            imageUrl: eventDetails.imageUrl,
+            imageUrl: dataEvents[id].imageUrl || eventDetails.imageUrl,
             description: eventDetails.description,
             category: eventDetails.category,
             moreInformation: eventDetails.moreInformation,
             ticketPrice: eventDetails.ticketPrice,
             maxTickets: eventDetails.maxTickets,
-            host: shortenAddress(eventDetails.host), // Set the host
+            host: shortenAddress(eventDetails.host),
             registered: eventDetails.registered,
           });
         }
@@ -52,10 +54,15 @@ const EventDetailPage = () => {
     };
 
     fetchEvent();
-  }, [wallet, id]);
+  }, [wallet, id, dataEvents]);
   if (isLoading) {
-    return <p className="ml-3">Loading...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-transparent">
+        <p className="text-gray-500 text-sm">Loading...</p>
+      </div>
+    );
   }
+  
 
   if (!event) {
     return <p>Event not found</p>;

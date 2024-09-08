@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logos/logo.png";
 import { motion } from "framer-motion";
-import { useConnectWallet } from "@subwallet-connect/react";
+import { useConnectWallet, useSetChain } from "@subwallet-connect/react";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [{ wallet } = {}, connect, disconnect] = useConnectWallet();
-  
+
+  const [{ connectedChain, settingChain }, setChain] = useSetChain();
+
+  const moonbeamAlphaChainId = "0x507"; // Moonbeam Alpha Testnet Chain ID
+
+  useEffect(() => {
+    if (wallet && connectedChain?.id !== moonbeamAlphaChainId) {
+      setChain({
+        chainId: moonbeamAlphaChainId,
+        chainNamespace: "evm",
+        rpcUrl: "https://rpc.api.moonbase.moonbeam.network",
+      });
+    }
+  }, [wallet, connectedChain, setChain]);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
