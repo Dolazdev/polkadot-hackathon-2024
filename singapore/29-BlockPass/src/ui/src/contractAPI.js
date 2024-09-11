@@ -9,13 +9,10 @@ export const fetchEventsFromContract = async (wallet) => {
     }
 
     // Create ethers provider for EVM-based interaction
-    console.log(wallet.provider)
     const ethersProvider = new ethers.providers.Web3Provider(
       wallet.provider,
       "any"
     );
-    console.log(ethersProvider)
-    console.log(ethersProvider.getSigner())
     const contract = contractInstance.connect(ethersProvider.getSigner());
 
     // Fetch number of events from contract
@@ -24,6 +21,15 @@ export const fetchEventsFromContract = async (wallet) => {
     const fetchedEvents = [];
     for (let i = 0; i < eventCount; i++) {
       const event = await contract.events(i);
+      console.log(wallet.accounts[0].address)
+
+      // Return bool: if a user has registered for an event
+      const hasRegistered = await contract.hasPurchasedTicket(i, wallet.accounts[0].address);
+      console.log(hasRegistered)
+
+      // returns all users that register for an event
+      const attendees = await contract.getEventAttendees(i);
+      console.log(attendees);
 
       const transformedEvent = {
         id: event[0].toString(), 
@@ -39,7 +45,7 @@ export const fetchEventsFromContract = async (wallet) => {
         ticketPrice: ethers.utils.formatEther(event[1][9]), 
         maxTickets: event[1][10].toNumber(), 
         ticketsSold: event[2].toNumber(), 
-        registered: event[3], 
+        registered: hasRegistered, 
         active: event[4], 
         ticketNFTAddress: event[5], 
         host: event[6], 
