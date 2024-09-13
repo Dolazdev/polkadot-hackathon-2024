@@ -12,6 +12,7 @@ const EventGallery = () => {
   const [events, setEvent] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [{ wallet }] = useConnectWallet();
+  const [loading, setLoading] = useState(true);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -24,18 +25,23 @@ const EventGallery = () => {
 
   // console.log(wallet);
   useEffect(() => {
-    const fetchEvents = async () => {
-      const fetchedEvents = await fetchEventsFromContract(wallet);
+    try {
+      const fetchEvents = async () => {
+        const fetchedEvents = await fetchEventsFromContract(wallet);
 
-      const combinedEvents = fetchedEvents.map((event, index) => ({
-        ...event,
-        imageUrl: dataEvents[index].imageUrl || "", // Fallback to empty string if no imageUrl
-      }));
-      setEvent(combinedEvents);
-    };
-
-    if (wallet) {
-      fetchEvents();
+        const combinedEvents = fetchedEvents.map((event, index) => ({
+          ...event,
+          imageUrl: dataEvents[index].imageUrl || "", // Fallback to empty string if no imageUrl
+        }));
+        setEvent(combinedEvents);
+      };
+      if (wallet) {
+        fetchEvents();
+      }
+    } catch (error) {
+      console.error("Failed to load events page:", error);
+    } finally {
+      setLoading(false);
     }
   }, [wallet, dataEvents]);
   return (
@@ -121,44 +127,50 @@ const EventGallery = () => {
         <h2 className="text-3xl font-bold text-gray-700 mb-6">
           EVENTS GALLERY
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {events.map((event) => (
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              key={event.id}
-              className="bg-white rounded-xl w-auto h-auto overflow-hidden shadow-lg"
-            >
-              <Link to={`/event/${event.id}`}>
-                <img
-                  src={event.imageUrl}
-                  alt={event.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="flex p-4">
-                  <div className="flex-none mr-5 align-middle items-center">
-                    <p className="text-gray-500 font-semibold">
-                      {formatDate(event.date).split(" ")[0]}
-                    </p>
-                    <p className="text-black text-3xl font-bold">
-                      {formatDate(event.date).split(" ")[1]}
-                    </p>
+        {loading ? (
+          <div className="flex justify-center items-center mt-5  bg-transparent">
+            <p className="text-gray-500 text-2xl">Loading Events...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {events.map((event) => (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                key={event.id}
+                className="bg-white rounded-xl w-auto h-auto overflow-hidden shadow-lg"
+              >
+                <Link to={`/event/${event.id}`}>
+                  <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="flex p-4">
+                    <div className="flex-none mr-5 align-middle items-center">
+                      <p className="text-gray-500 font-semibold">
+                        {formatDate(event.date).split(" ")[0]}
+                      </p>
+                      <p className="text-black text-3xl font-bold">
+                        {formatDate(event.date).split(" ")[1]}
+                      </p>
+                    </div>
+                    <div className="flex-grow text-center flex flex-col justify-center">
+                      <h3 className="text-sm text-start font-bold mb-2">
+                        {event.title}
+                      </h3>
+                      <p className="text-gray-700 text-start text-xs">
+                        {event.description}
+                      </p>
+                      <p className="text-gray-700 text-start mt-2 text-xs">
+                        📍{event.location}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-grow text-center flex flex-col justify-center">
-                    <h3 className="text-sm text-start font-bold mb-2">
-                      {event.title}
-                    </h3>
-                    <p className="text-gray-700 text-start text-xs">
-                      {event.description}
-                    </p>
-                    <p className="text-gray-700 text-start mt-2 text-xs">
-                      📍{event.location}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
         <div
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
           aria-hidden="true"

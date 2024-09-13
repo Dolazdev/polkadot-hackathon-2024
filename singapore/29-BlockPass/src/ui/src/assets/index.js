@@ -4,6 +4,8 @@ import event3 from "./event3.png";
 import event4 from "./event4.png";
 import event5 from "./event5.png";
 import event6 from "./event6.png";
+import event7 from "./event7.png";
+import event8 from "./event8.png";
 import Subwallet from "./Subwallet";
 import LogoSubwallet from "./LogoSubWallet";
 
@@ -14,6 +16,8 @@ export {
   event4,
   event5,
   event6,
+  event7,
+  event8,
   Subwallet,
   LogoSubwallet,
 };

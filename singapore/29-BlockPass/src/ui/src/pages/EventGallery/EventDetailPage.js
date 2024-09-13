@@ -32,6 +32,8 @@ const EventDetailPage = () => {
         // Find the specific event by ID
         const eventDetails = fetchedEvents.find((event) => event.id === id);
 
+        // console.log(eventDetails);
+
         if (eventDetails) {
           setEvent({
             title: eventDetails.title,
@@ -41,12 +43,14 @@ const EventDetailPage = () => {
             location: eventDetails.location,
             imageUrl: dataEvents[id].imageUrl || eventDetails.imageUrl,
             description: eventDetails.description,
+            ticketsSold: eventDetails.ticketsSold,
             category: eventDetails.category,
             moreInformation: eventDetails.moreInformation,
             ticketPrice: eventDetails.ticketPrice,
             maxTickets: eventDetails.maxTickets,
             host: shortenAddress(eventDetails.host),
             registered: eventDetails.registered,
+            attendees: eventDetails.getAttendees,
           });
         }
         setIsLoading(false);
@@ -58,11 +62,10 @@ const EventDetailPage = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-transparent">
-        <p className="text-gray-500 text-sm">Loading...</p>
+        <p className="text-gray-500 text-2xl">Loading...</p>
       </div>
     );
   }
-  
 
   if (!event) {
     return <p>Event not found</p>;
@@ -136,11 +139,49 @@ const EventDetailPage = () => {
               <h3 className="text-xl text-gray-300 font-semibold">Hosted By</h3>
               <hr className="my-1 border-gray-600" />
               <p className="mt-1 text-gray-100 text-sm">{event.host}</p>
-              <p className="my-4 text-gray-300">
-                {event.maxTickets} Tickets Available
-              </p>
+              <div className="flex items-center space-x-3 mt-2">
+                <p className=" text-gray-300">
+                  {event.maxTickets} Tickets Available 🎟️
+                </p>
+                <p className=" text-gray-300">
+                  👉 {event.maxTickets - event.ticketsSold} Tickets Left
+                </p>
+              </div>
               <hr className="mt-1 border-gray-600" />
             </div>
+            <p className="my-4 text-gray-300">
+              {event?.attendees?.length
+                ? `${event.attendees.length} Going`
+                : "No Attendees Yet"}
+            </p>
+            <hr className="mt-1 border-gray-600" />
+
+            <ul className="mt-2 text-gray-100">
+              {event?.attendees && event.attendees.length > 0 ? (
+                event.attendees.length <= 3 ? (
+                  event.attendees.map((attendee, index) => (
+                    <li key={index} className="inline">
+                      {shortenAddress(attendee)}
+                      {index < event.attendees.length - 1 ? ", " : ""}
+                    </li>
+                  ))
+                ) : (
+                  <>
+                    {event.attendees.slice(0, 3).map((attendee, index) => (
+                      <li key={index} className="inline">
+                        {shortenAddress(attendee)}
+                        {index < 2 ? ", " : ""}
+                      </li>
+                    ))}
+                    <li className="inline">
+                      , and {event.attendees.length - 3} others
+                    </li>
+                  </>
+                )
+              ) : (
+                <li className="inline"></li>
+              )}
+            </ul>
             <div className="mt-6">
               <button
                 className={`w-full py-3 rounded-lg text-lg font-semibold ${

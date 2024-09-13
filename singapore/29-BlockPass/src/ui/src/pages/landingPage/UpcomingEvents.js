@@ -1,16 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { events } from "../../data";
 import { motion } from "framer-motion";
+import { useConnectWallet } from "@subwallet-connect/react";
+import { fetchEventsFromContract } from "../../contractAPI";
+import { events as localEvents } from "../../data";
+
 
 
 const UpcomingEvents = () => {
-  const [filteredEvents, setFilteredEvents] = useState(events);
   const [filters, setFilters] = useState({
     weekdays: "",
     eventType: "",
     category: "",
   });
   const [showLoadMore, setShowLoadMore] = useState(true);
+  const [dataEvents, setEvents] = useState(localEvents);
+  const [events, setEvent] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState(events);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [{ wallet }] = useConnectWallet();
+  const [loading, setLoading] = useState(true);
+
+
+ 
+
+  // console.log(wallet);
+  useEffect(() => {
+    try {
+      const fetchEvents = async () => {
+        const fetchedEvents = await fetchEventsFromContract(wallet);
+
+        const combinedEvents = fetchedEvents.map((event, index) => ({
+          ...event,
+          imageUrl: dataEvents[index].imageUrl || "", // Fallback to empty string if no imageUrl
+        }));
+        setEvent(combinedEvents);
+      };
+
+      if (wallet) {
+        fetchEvents();
+      }
+    } catch (error) {
+      console.error("Failed to load events page:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [wallet, dataEvents]);
 
   const handleFilter = (filterType, value) => {
     const updatedFilters = { ...filters, [filterType]: value };
@@ -25,7 +60,7 @@ const UpcomingEvents = () => {
     if (value && value !== "All") {
       if (filterType === "weekdays") {
         updatedEvents = updatedEvents.filter(
-          (event) => event.weekday === value
+          (event) => formatDate(event.date) === value
         );
       } else if (filterType === "eventType") {
         updatedEvents = updatedEvents.filter(
@@ -62,7 +97,7 @@ const UpcomingEvents = () => {
   };
 
   return (
-    <div className=" mx-auto lg:mx-[177px] p-6">
+    <div className=" mx-auto max-w-6xl p-6">
       <div className="flex  items-center justify-start mb-[77px] ">
         {" "}
         <h2 className="text-3xl font-bold text-center text-gray-800 ">
@@ -123,8 +158,8 @@ const UpcomingEvents = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {filteredEvents.map((event) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {events.map((event) => (
           <motion.div
             whileHover={{ scale: 1.05 }}
             key={event.id}

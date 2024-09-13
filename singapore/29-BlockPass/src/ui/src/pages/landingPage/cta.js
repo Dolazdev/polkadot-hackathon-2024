@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 const CreateEventSection = () => {
   return (
     <div className="bg-purple-100 lg:relative flex items-center lg:h-[232px]  justify-center py-10 px-4">
-      <div className="lg:absolute left-[300px] -top-8 hidden lg:block">
+      <div className="lg:absolute left-[300px] -top-8 hidden md:hidden lg:block">
         <motion.img
           whileHover={{ scale: 1.1, transition: { duration: 0.5 } }}
           src={cta}

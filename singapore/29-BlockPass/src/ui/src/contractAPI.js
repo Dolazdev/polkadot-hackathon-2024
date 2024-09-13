@@ -21,39 +21,43 @@ export const fetchEventsFromContract = async (wallet) => {
     const fetchedEvents = [];
     for (let i = 0; i < eventCount; i++) {
       const event = await contract.events(i);
-      console.log(wallet.accounts[0].address)
+      // console.log(wallet.accounts[0].address)
 
       // Return bool: if a user has registered for an event
-      const hasRegistered = await contract.hasPurchasedTicket(i, wallet.accounts[0].address);
-      console.log(hasRegistered)
+      const hasRegistered = await contract.hasPurchasedTicket(
+        i,
+        wallet.accounts[0].address
+      );
+      // console.log(hasRegistered)
 
       // returns all users that register for an event
       const attendees = await contract.getEventAttendees(i);
-      console.log(attendees);
+      // console.log(attendees);
 
       const transformedEvent = {
-        id: event[0].toString(), 
-        title: event[1][0], 
-        date: event[1][1], 
-        startTime: event[1][2], 
-        endTime: event[1][3], 
-        location: event[1][4], 
-        imageUrl: event[1][5], 
-        description: event[1][6], 
-        category: event[1][7],  
-        moreInformation: event[1][8], 
-        ticketPrice: ethers.utils.formatEther(event[1][9]), 
-        maxTickets: event[1][10].toNumber(), 
-        ticketsSold: event[2].toNumber(), 
-        registered: hasRegistered, 
-        active: event[4], 
-        ticketNFTAddress: event[5], 
-        host: event[6], 
+        id: event[0].toString(),
+        title: event[1][0],
+        date: event[1][1],
+        startTime: event[1][2],
+        endTime: event[1][3],
+        location: event[1][4],
+        imageUrl: event[1][5],
+        description: event[1][6],
+        category: event[1][7],
+        moreInformation: event[1][8],
+        ticketPrice: ethers.utils.formatEther(event[1][9]),
+        maxTickets: event[1][10].toNumber(),
+        ticketsSold: event[2].toNumber(),
+        registered: hasRegistered,
+        getAttendees: attendees,
+        active: event[4],
+        ticketNFTAddress: event[5],
+        host: event[6],
       };
 
       fetchedEvents.push(transformedEvent);
     }
-    console.log(fetchedEvents);
+    // console.log(fetchedEvents);
     return fetchedEvents;
   } catch (error) {
     console.error("Error fetching events:", error);
@@ -86,7 +90,7 @@ export const createEvent = async (
     );
     await tx.wait();
 
-    console.log("Event created successfully!");
+    alert("Event created successfully!");
   } catch (error) {
     console.error("Error creating event:", error);
   }
@@ -126,10 +130,12 @@ export const registerForEvent = async (wallet, eventId, ticketPrice) => {
     );
     const contract = contractInstance.connect(ethersProvider.getSigner());
 
-    const tx = await contract.purchaseTicket(eventId, "someuri", {value: ethers.utils.parseEther(ticketPrice)});
+    const tx = await contract.purchaseTicket(eventId, "someuri", {
+      value: ethers.utils.parseEther(ticketPrice),
+    });
     await tx.wait();
 
-    console.log("Registered for event successfully!");
+    alert("Registered for event successfully!");
   } catch (error) {
     console.error("Error registering for event:", error);
   }
@@ -140,16 +146,19 @@ export const fetchUserTickets = async (wallet) => {
     let ethersProvider;
 
     if (wallet?.type === "evm") {
-      ethersProvider = new ethers.providers.Web3Provider(wallet.provider, "any");
+      ethersProvider = new ethers.providers.Web3Provider(
+        wallet.provider,
+        "any"
+      );
     } else {
       throw new Error("Unsupported wallet type");
     }
 
     const signer = ethersProvider.getSigner();
     const account = wallet?.accounts.find((account) => account.address);
-    console.log(signer)
+    // console.log(signer)
     const contract = contractInstance.connect(signer);
-    console.log(account.address)
+    // console.log(account.address)
 
     // Fetch tickets associated with the user's wallet address
     const userTickets = await contract.getRegisteredEvents(account.address);
